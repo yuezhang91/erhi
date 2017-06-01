@@ -9,3 +9,6 @@ install:
 # (do not forget to create a virtualenv first)
 setup:
 	@pip install -U -e .\[tests\]
+
+run:
+	@python manager.py runserver
