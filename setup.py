@@ -19,7 +19,7 @@ setup(
     packages=find_packages(),
 
     install_requires=[
-        'flask-restful>=0.3.5',
+        'flask-restplus>=0.10.1',
         'flask-script>=0.4.0',
     ],
 )
