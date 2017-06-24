@@ -21,5 +21,7 @@ setup(
     install_requires=[
         'flask-restplus>=0.10.1',
         'flask-script>=0.4.0',
+        'flask-mongoengine>=0.9.3',
+        'flask-httpauth>=3.2.3',
     ],
 )
