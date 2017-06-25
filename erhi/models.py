@@ -5,7 +5,7 @@ from passlib.apps import custom_app_context as pw_context
 from itsdangerous import (TimedJSONWebSignatureSerializer
                           as Serializer, BadSignature, SignatureExpired)
 
-KEY = 'erhiforhier'
+from erhi.app import app
 
 db = MongoEngine()
 auth = HTTPBasicAuth()
@@ -22,12 +22,12 @@ class User(db.Document):
         return pw_context.verify(raw_password, self.password)
 
     def generate_auth_token(self, expiration=600):
-        s = Serializer(KEY, expires_in=expiration)
+        s = Serializer(app.config['SECRET_KEY'], expires_in=expiration)
         return s.dumps({'email': self.email})
 
     @staticmethod
     def verify_auth_token(token):
-        s = Serializer(KEY)
+        s = Serializer(app.config['SECRET_KEY'])
         try:
             data = s.loads(token)
         except SignatureExpired:
