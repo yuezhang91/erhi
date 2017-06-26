@@ -23,5 +23,7 @@ setup(
         'flask-script>=0.4.0',
         'flask-mongoengine>=0.9.3',
         'flask-httpauth>=3.2.3',
+        'pre-commit>=0.14.2',
+        'flake8>=3.3.0'
     ],
 )
