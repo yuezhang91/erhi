@@ -5,6 +5,8 @@ from passlib.apps import custom_app_context as pw_context
 from itsdangerous import (TimedJSONWebSignatureSerializer
                           as Serializer, BadSignature, SignatureExpired)
 
+from datetime import datetime
+
 from erhi.app import app
 
 db = MongoEngine()
@@ -48,3 +50,15 @@ def verify_password(email_or_token, password):
             return False
     g.user = user
     return True
+
+
+class Event(db.Document):
+    title = db.StringField()
+    description = db.StringField()
+    time = db.DateTimeField(required=True)
+    # auto_index defaults to True, automatically create  a ‘2dsphere’ index
+    location = db.PointField(required=True)
+    creator = db.StringField()
+    keywords = db.ListField()
+    created = db.DateTimeField(default=datetime.now())
+    updated = db.DateTimeField(default=datetime.now())

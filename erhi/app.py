@@ -19,10 +19,14 @@ db.init_app(app)
 from erhi.resources.ping import api as Ping # noqa
 from erhi.resources.signup import api as Signup # noqa
 from erhi.resources.login import api as Login # noqa
+from erhi.resources.events import api as Events # noqa
 
 api.add_namespace(Ping, '/ping')
+
 api.add_namespace(Signup, '/signup')
 api.add_namespace(Login, '/login')
+
+api.add_namespace(Events, '/events')
 
 if __name__ == '__main__':
     app.run()
