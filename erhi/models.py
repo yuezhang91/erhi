@@ -14,8 +14,10 @@ auth = HTTPBasicAuth()
 
 
 class User(db.Document):
-    email = db.StringField()
+    email = db.EmailField()
+    username = db.StringField()
     password = db.StringField()
+    created = db.DateTimeField()
 
     def hash_password(self, raw_password):
         self.password = pw_context.encrypt(raw_password)
@@ -59,6 +61,7 @@ class Event(db.Document):
     # auto_index defaults to True, automatically create  a ‘2dsphere’ index
     location = db.PointField(required=True)
     creator = db.StringField()
+    # default for ListFields is []
     keywords = db.ListField()
-    created = db.DateTimeField(default=datetime.now())
-    updated = db.DateTimeField(default=datetime.now())
+    created = db.DateTimeField(default=datetime.utcnow())
+    updated = db.DateTimeField(default=datetime.utcnow())
