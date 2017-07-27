@@ -15,9 +15,11 @@ auth = HTTPBasicAuth()
 
 class User(db.Document):
     email = db.EmailField()
+    # TODO: make username unique
     username = db.StringField()
     password = db.StringField()
-    created = db.DateTimeField()
+    created = db.DateTimeField(default=datetime.utcnow())
+    updated = db.DateTimeField(default=datetime.utcnow())
 
     def hash_password(self, raw_password):
         self.password = pw_context.encrypt(raw_password)

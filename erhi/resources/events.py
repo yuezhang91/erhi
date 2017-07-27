@@ -10,6 +10,34 @@ api = Namespace('events', description='')
 EVENTS_PER_PAGE = 15
 
 
+def processEventDetail(data):
+    title = data.get('title')
+    description = data.get('description')
+    creator = data.get('creator')
+    keywords = data.get('keywords')
+
+    # expect utc time ?
+    epoch_time = data.get('time')
+    location_coordinates = data.get('location')
+    if epoch_time is None or location_coordinates is None:
+        abort(400, 'time and location of event are required')
+
+    time = datetime.fromtimestamp(epoch_time)
+    location = {
+        'type': 'Point',
+        'coordinates': location_coordinates
+    }
+
+    return {
+        'title': title,
+        'description': description,
+        'creator': creator,
+        'keywords': keywords,
+        'time': time,
+        'location': location
+    }
+
+
 @api.route('/')
 class Events(Resource):
     def get(self):
@@ -22,22 +50,7 @@ class Events(Resource):
     def post(self):
         data = request.get_json()
 
-        title = data.get('title')
-        description = data.get('description')
-        creator = data.get('creator')
-        keywords = data.get('keywords')
-
-        # expect utc time ?
-        epoch_time = data.get('time')
-        location_coordinates = data.get('location')
-        if epoch_time is None or location_coordinates is None:
-            abort(400, 'time and location of event are required')
-
-        time = datetime.fromtimestamp(epoch_time)
-        location = {
-            'type': 'Point',
-            'coordinates': location_coordinates
-        }
+        eventDetail = processEventDetail(data)
 
         oid = data.get('oid')
         # if valid oid provided, do update instead of creating
@@ -46,12 +59,12 @@ class Events(Resource):
             if not ev:
                 abort(400, 'invalid object id provided')
             status = ev.update(**{
-                'title': title,
-                'description': description,
-                'time': time,
-                'location': location,
-                'creator': creator,
-                'keywords': keywords,
+                'title': eventDetail['title'],
+                'description': eventDetail['description'],
+                'time': eventDetail['time'],
+                'location': eventDetail['location'],
+                'creator': eventDetail['creator'],
+                'keywords': eventDetail['keywords'],
                 'updated': datetime.utcnow()
             })
 
@@ -59,14 +72,43 @@ class Events(Resource):
                 abort(500, 'event update failed')
         else:
             ev = Event(
-                title=title,
-                description=description,
-                time=time,
-                location=location,
-                creator=creator,
-                keywords=keywords,
+                title=eventDetail['title'],
+                description=eventDetail['description'],
+                time=eventDetail['time'],
+                location=eventDetail['location'],
+                creator=eventDetail['creator'],
+                keywords=eventDetail['keywords'],
                 created=datetime.utcnow())
 
             ev.save()
 
         return ev.to_json()
+
+
+@api.route('/batch')
+class EventsBatch(Resource):
+    def post(self):
+        batchedEvents = request.get_json()
+
+        if not batchedEvents or type(batchedEvents) is not list:
+            abort(400, 'batched events have to be a list')
+
+        count = 0
+
+        for event in batchedEvents:
+            eventDetail = processEventDetail(event)
+
+            ev = Event(
+                title=eventDetail['title'],
+                description=eventDetail['description'],
+                time=eventDetail['time'],
+                location=eventDetail['location'],
+                creator=eventDetail['creator'],
+                keywords=eventDetail['keywords'],
+                created=datetime.utcnow())
+
+            ev.save()
+
+            count += 1
+
+        return '{} events are created'.format(count)

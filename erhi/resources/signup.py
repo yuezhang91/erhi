@@ -14,6 +14,8 @@ class Signup(Resource):
         data = request.get_json()
 
         email = data.get('email')
+        # default username as email while signup
+        username = data.get('username') or email
         password = data.get('password')
         if email is None or password is None:
             abort(400, 'both email and password are required for sign up')
@@ -21,7 +23,9 @@ class Signup(Resource):
         if User.objects(email=email).count():
             abort(400, 'existing user')  # existing user
 
-        user = User(email=email)
+        user = User(
+            email=email,
+            username=username)
         user.hash_password(password)
 
         user.save()
