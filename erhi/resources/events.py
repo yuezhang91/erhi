@@ -1,9 +1,9 @@
-from flask import request, abort
+from flask import abort, g, request
 from flask_restplus import Namespace, Resource
 
 from datetime import datetime
 
-from erhi.models import Event
+from erhi.models import auth, Event
 
 api = Namespace('events', description='')
 
@@ -13,7 +13,6 @@ EVENTS_PER_PAGE = 15
 def processEventDetail(data):
     title = data.get('title')
     description = data.get('description')
-    creator = data.get('creator')
     keywords = data.get('keywords')
 
     # expect utc time ?
@@ -31,7 +30,6 @@ def processEventDetail(data):
     return {
         'title': title,
         'description': description,
-        'creator': creator,
         'keywords': keywords,
         'time': time,
         'location': location
@@ -47,7 +45,12 @@ class Events(Resource):
 
         return [event.to_json() for event in events.items]
 
+    @auth.login_required
     def post(self):
+        creator = g.user
+        if creator is None:
+            abort(500, 'user logged in but no user instance found')
+
         data = request.get_json()
 
         eventDetail = processEventDetail(data)
@@ -63,7 +66,7 @@ class Events(Resource):
                 'description': eventDetail['description'],
                 'time': eventDetail['time'],
                 'location': eventDetail['location'],
-                'creator': eventDetail['creator'],
+                'creator': creator,
                 'keywords': eventDetail['keywords'],
                 'updated': datetime.utcnow()
             })
@@ -76,18 +79,26 @@ class Events(Resource):
                 description=eventDetail['description'],
                 time=eventDetail['time'],
                 location=eventDetail['location'],
-                creator=eventDetail['creator'],
+                creator=creator,
                 keywords=eventDetail['keywords'],
                 created=datetime.utcnow())
 
             ev.save()
+
+            # append the event into user created list
+            creator.update(add_to_set__created=ev)
 
         return ev.to_json()
 
 
 @api.route('/batch')
 class EventsBatch(Resource):
+    @auth.login_required
     def post(self):
+        creator = g.user
+        if creator is None:
+            abort(500, 'user logged in but no user instance found')
+
         batchedEvents = request.get_json()
 
         if not batchedEvents or type(batchedEvents) is not list:
@@ -103,11 +114,13 @@ class EventsBatch(Resource):
                 description=eventDetail['description'],
                 time=eventDetail['time'],
                 location=eventDetail['location'],
-                creator=eventDetail['creator'],
+                creator=creator,
                 keywords=eventDetail['keywords'],
                 created=datetime.utcnow())
 
             ev.save()
+
+            creator.update(add_to_set__created=ev)
 
             count += 1
 

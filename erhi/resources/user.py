@@ -9,8 +9,10 @@ api = Namespace('user', description='')
 @api.route('/')
 class Profile(Resource):
     def get(self):
-        # locate user with either object id or username
+        # locate user with either object id
         oid = request.args.get('oid')
+        # not a good idea to expose username in url
+        # should add admin access only?
         username = request.args.get('username')
 
         if not oid and not username:

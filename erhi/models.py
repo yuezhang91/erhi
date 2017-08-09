@@ -4,6 +4,7 @@ from flask_httpauth import HTTPBasicAuth
 from passlib.apps import custom_app_context as pw_context
 from itsdangerous import (TimedJSONWebSignatureSerializer
                           as Serializer, BadSignature, SignatureExpired)
+from mongoengine import NULLIFY, PULL
 
 from datetime import datetime
 
@@ -18,8 +19,11 @@ class User(db.Document):
     # TODO: make username unique
     username = db.StringField()
     password = db.StringField()
-    created = db.DateTimeField(default=datetime.utcnow())
-    updated = db.DateTimeField(default=datetime.utcnow())
+    created_on = db.DateTimeField(default=datetime.utcnow())
+    updated_on = db.DateTimeField(default=datetime.utcnow())
+    # TODO: events created
+    created = db.ListField(
+        db.ReferenceField('Event'))
 
     def hash_password(self, raw_password):
         self.password = pw_context.encrypt(raw_password)
@@ -62,8 +66,13 @@ class Event(db.Document):
     time = db.DateTimeField(required=True)
     # auto_index defaults to True, automatically create  a ‘2dsphere’ index
     location = db.PointField(required=True)
-    creator = db.StringField()
+    # this field or object id we should reference in User model?
+    creator = db.ReferenceField(User)
     # default for ListFields is []
     keywords = db.ListField()
     created = db.DateTimeField(default=datetime.utcnow())
     updated = db.DateTimeField(default=datetime.utcnow())
+
+
+User.register_delete_rule(Event, 'creator', NULLIFY)
+Event.register_delete_rule(User, 'created', PULL)
