@@ -9,7 +9,7 @@ api = Namespace('user', description='')
 @api.route('/')
 class Profile(Resource):
     def get(self):
-        # locate user with either object id
+        # locate user with either object id or username
         oid = request.args.get('oid')
         # not a good idea to expose username in url
         # should add admin access only?
@@ -27,11 +27,13 @@ class Profile(Resource):
         if not user:
             abort(400, 'cannot locate the user')
 
+        # return user info plus event created as default
+        # TODO: events created pagination
         profile = {
             'user_id': str(user.id),
             'email': user.email,
             'username': user.username,
-            'created': str(user.created)
+            'created': [created.to_json() for created in user.created]
         }
 
         return profile

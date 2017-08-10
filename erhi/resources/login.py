@@ -12,4 +12,4 @@ class Login(Resource):
     def get(self):
         token = g.user.generate_auth_token()
 
-        return token.decode()
+        return {'token': token.decode()}

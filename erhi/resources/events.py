@@ -1,5 +1,6 @@
 from flask import abort, g, request
 from flask_restplus import Namespace, Resource
+from mongoengine.errors import ValidationError
 
 from datetime import datetime
 
@@ -58,9 +59,14 @@ class Events(Resource):
         oid = data.get('oid')
         # if valid oid provided, do update instead of creating
         if oid:
-            ev = Event.objects(id=oid).first()
-            if not ev:
-                abort(400, 'invalid object id provided')
+            try:
+                ev = Event.objects(id=oid).first()
+            except ValidationError:
+                abort(400, 'invalid event object id, it must be a 12-byte'
+                           ' input or a 24-character hex string')
+
+            if ev is None:
+                abort(400, 'could not locate the event from object id')
             status = ev.update(**{
                 'title': eventDetail['title'],
                 'description': eventDetail['description'],
@@ -89,6 +95,29 @@ class Events(Resource):
             creator.update(add_to_set__created=ev)
 
         return ev.to_json()
+
+
+@api.route('/remove')
+class EventsDelete(Resource):
+    @auth.login_required
+    def post(self):
+        oid = request.args.get('oid')
+
+        if not oid:
+            abort(400, 'event object is required to remove event')
+
+        try:
+            ev = Event.objects(id=oid).first()
+        except ValidationError:
+            abort(400, 'invalid event object id, it must be a 12-byte'
+                       ' input or a 24-character hex string')
+
+        if ev is None:
+            abort(400, 'could not locate the event from object id')
+
+        ev.delete()
+
+        return {"message": "event {} was deleted".format(oid)}
 
 
 @api.route('/batch')
