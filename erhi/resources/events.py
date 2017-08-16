@@ -56,17 +56,17 @@ class Events(Resource):
 
         eventDetail = processEventDetail(data)
 
-        oid = data.get('oid')
-        # if valid oid provided, do update instead of creating
-        if oid:
+        id = data.get('id')
+        # if valid id provided, do update instead of creating
+        if id:
             try:
-                ev = Event.objects(id=oid).first()
+                ev = Event.objects(id=id).first()
             except ValidationError:
                 abort(400, 'invalid event object id, it must be a 12-byte'
                            ' input or a 24-character hex string')
 
             if ev is None:
-                abort(400, 'could not locate the event from object id')
+                abort(400, 'can not locate the event from object id')
             status = ev.update(**{
                 'title': eventDetail['title'],
                 'description': eventDetail['description'],
@@ -101,23 +101,23 @@ class Events(Resource):
 class EventsDelete(Resource):
     @auth.login_required
     def post(self):
-        oid = request.args.get('oid')
+        id = request.args.get('id')
 
-        if not oid:
+        if not id:
             abort(400, 'event object is required to remove event')
 
         try:
-            ev = Event.objects(id=oid).first()
+            ev = Event.objects(id=id).first()
         except ValidationError:
             abort(400, 'invalid event object id, it must be a 12-byte'
                        ' input or a 24-character hex string')
 
         if ev is None:
-            abort(400, 'could not locate the event from object id')
+            abort(400, 'can not locate the event from object id')
 
         ev.delete()
 
-        return {"message": "event {} was deleted".format(oid)}
+        return {"message": "event {} was deleted".format(id)}
 
 
 @api.route('/batch')
