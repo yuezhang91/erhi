@@ -9,6 +9,8 @@ from erhi.models import auth, Event
 api = Namespace('events', description='')
 
 EVENTS_PER_PAGE = 15
+# miles / 3963.2 applied for geo_within
+DEFAULT_EVENT_RADIUS = 100 / 3963.2
 
 
 def processEventDetail(data):
@@ -42,7 +44,18 @@ class Events(Resource):
     def get(self):
         page = int(request.args.get('page') or 1)
 
-        events = Event.objects.paginate(page=page, per_page=EVENTS_PER_PAGE)
+        # user geo location: longitude, latitude
+        geo = request.args.get('geo')
+        longitude, latitude = [float(e) for e in geo.split(',')]
+
+        # query event within a distance
+        radius = int(request.args.get('dis')) / 3963.2 or DEFAULT_EVENT_RADIUS
+
+        events = Event \
+            .objects(location__geo_within_sphere=[(longitude, latitude),
+                     radius]) \
+            .order_by('time') \
+            .paginate(page=page, per_page=EVENTS_PER_PAGE)
 
         return [event.to_json() for event in events.items]
 
