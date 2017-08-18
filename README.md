@@ -12,12 +12,10 @@ To do any work on the library
 
 * Install the required modules for development/testing
 
-  .. code-block:: sh
 
           make setup
 
 * Install commit hooks
 
-  .. code-block:: sh
 
           pre-commit install

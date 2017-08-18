@@ -3,7 +3,7 @@ from flask_restplus import Namespace, Resource
 
 from erhi.models import User
 
-api = Namespace('signup', description='')
+api = Namespace('signup', description='user signup')
 
 
 @api.route('/')

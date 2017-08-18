@@ -7,7 +7,9 @@ app.config.from_object('config.development')
 # sensitive config
 app.config.from_pyfile('config.py')
 
-api = Api(app)
+api = Api(app,
+          version='1.0',
+          title='Hier API')
 
 # import models and resources after app
 # initialization to prevent circular import

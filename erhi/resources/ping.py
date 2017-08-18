@@ -1,6 +1,6 @@
 from flask_restplus import Namespace, Resource
 
-api = Namespace('signup', description='')
+api = Namespace('ping', description='health check')
 
 
 @api.route('/')

@@ -1,12 +1,42 @@
 from flask import abort, g, request
-from flask_restplus import Namespace, Resource
+from flask_restplus import Namespace, Resource, reqparse, fields
 from mongoengine.errors import ValidationError
 
 from datetime import datetime
 
-from erhi.models import auth, Event
+from erhi.models import auth, Event, User
+# from erhi.resources.user import user_fields
 
-api = Namespace('events', description='')
+api = Namespace('events', description='event list')
+
+# argument parsing
+parser = reqparse.RequestParser()
+parser.add_argument('page', type=int, help='page # for events')
+parser.add_argument('geo', type=str, required=True,
+                    help='geo location in format of long,lat')
+parser.add_argument('dis', type=int, help='location query redius in miles')
+
+
+class UserField(fields.Raw):
+    def format(self, obj):
+        if isinstance(obj, User) and hasattr(obj, 'id'):
+            return str(obj.id)
+        # TODO: errors or logs here
+        return None
+
+
+event_fields = api.model('Event', {
+    'title': fields.String,
+    'description': fields.String,
+    'time': fields.DateTime(dt_format='rfc822'),
+    'location': fields.Raw,
+    # No nested field for creator to prevent infinite loop
+    'creator': UserField,
+    'keywords': fields.List(fields.String),
+    'created_on': fields.DateTime(dt_format='rfc822', attribute='created'),
+    'updated_on': fields.DateTime(dt_format='rfc822', attribute='updated')
+})
+
 
 EVENTS_PER_PAGE = 15
 # miles / 3963.2 applied for geo_within
@@ -41,15 +71,15 @@ def processEventDetail(data):
 
 @api.route('/')
 class Events(Resource):
+    @api.marshal_with(event_fields)
     def get(self):
-        page = int(request.args.get('page') or 1)
+        args = parser.parse_args()
+        page = args['page'] or 1
+        # sanity check for geo
+        geo = args['geo']
+        radius = args['dis'] / 3963.2 or DEFAULT_EVENT_RADIUS
 
-        # user geo location: longitude, latitude
-        geo = request.args.get('geo')
         longitude, latitude = [float(e) for e in geo.split(',')]
-
-        # query event within a distance
-        radius = int(request.args.get('dis')) / 3963.2 or DEFAULT_EVENT_RADIUS
 
         events = Event \
             .objects(location__geo_within_sphere=[(longitude, latitude),
@@ -57,7 +87,8 @@ class Events(Resource):
             .order_by('time') \
             .paginate(page=page, per_page=EVENTS_PER_PAGE)
 
-        return [event.to_json() for event in events.items]
+        # return [json.loads(event.to_json()) for event in events.items]
+        return events.items
 
     @auth.login_required
     def post(self):
