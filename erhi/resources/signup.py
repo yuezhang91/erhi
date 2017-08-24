@@ -1,24 +1,30 @@
 from flask import request, abort
-from flask_restplus import Namespace, Resource
+from flask_restplus import Namespace, Resource, fields
 
 from erhi.models import User
 
 api = Namespace('signup', description='user signup')
 
+signup_fields = api.model('Signup', {
+    'email': fields.String(required=True),
+    # TODO: how do we want to handle wechat login where the email is missing?
+    # Do we want to force an unique username?
+    'username': fields.String(),
+    'password': fields.String(required=True)
+})
+
 
 @api.route('/')
 class Signup(Resource):
+    @api.expect(signup_fields, validate=True)
     def post(self):
         # request header Content-Type must be set
         # to application/json for this to work
         data = request.get_json()
 
         email = data.get('email')
-        # default username as email while signup
         username = data.get('username') or email
         password = data.get('password')
-        if email is None or password is None:
-            abort(400, 'both email and password are required for sign up')
 
         if User.objects(email=email).count():
             abort(400, 'existing user')  # existing user

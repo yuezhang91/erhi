@@ -25,6 +25,7 @@ user_fields = api.model('User', {
 @api.route('/')
 class Profile(Resource):
     @api.marshal_with(user_fields)
+    @api.expect(parser)
     def get(self):
         # locate user with either object id or username
         args = parser.parse_args()

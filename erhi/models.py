@@ -10,6 +10,8 @@ from datetime import datetime
 
 from erhi.app import app
 
+TOKEN_LIFETIME = 60 * 60 * 24 * 30  # 30 days
+
 db = MongoEngine()
 auth = HTTPBasicAuth()
 
@@ -31,7 +33,7 @@ class User(db.Document):
     def verify_password(self, raw_password):
         return pw_context.verify(raw_password, self.password)
 
-    def generate_auth_token(self, expiration=600):
+    def generate_auth_token(self, expiration=TOKEN_LIFETIME):
         s = Serializer(app.config['SECRET_KEY'], expires_in=expiration)
         return s.dumps({'email': self.email})
 

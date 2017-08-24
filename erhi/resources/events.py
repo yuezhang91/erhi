@@ -7,14 +7,14 @@ from datetime import datetime
 from erhi.models import auth, Event, User
 # from erhi.resources.user import user_fields
 
-api = Namespace('events', description='event list')
+api = Namespace('events', description='')
 
 # argument parsing
 parser = reqparse.RequestParser()
-parser.add_argument('page', type=int, help='page # for events')
+parser.add_argument('page', type=int, help='events page number')
 parser.add_argument('geo', type=str, required=True,
-                    help='geo location in format of long,lat')
-parser.add_argument('dis', type=int, help='location query redius in miles')
+                    help='geo location in format of \'long,lat\'')
+parser.add_argument('dis', type=int, help='query events radius (miles)')
 
 
 class UserField(fields.Raw):
@@ -40,7 +40,8 @@ event_fields = api.model('Event', {
 
 EVENTS_PER_PAGE = 15
 # miles / 3963.2 applied for geo_within
-DEFAULT_EVENT_RADIUS = 100 / 3963.2
+MONGO_RADIUS_CONSTANT = 3963.2
+DEFAULT_EVENT_RADIUS = 100 / MONGO_RADIUS_CONSTANT
 
 
 def processEventDetail(data):
@@ -72,12 +73,13 @@ def processEventDetail(data):
 @api.route('/')
 class Events(Resource):
     @api.marshal_with(event_fields)
+    @api.expect(parser)
     def get(self):
         args = parser.parse_args()
         page = args['page'] or 1
         # sanity check for geo
         geo = args['geo']
-        radius = args['dis'] / 3963.2 or DEFAULT_EVENT_RADIUS
+        radius = args['dis'] / MONGO_RADIUS_CONSTANT or DEFAULT_EVENT_RADIUS
 
         longitude, latitude = [float(e) for e in geo.split(',')]
 
@@ -91,6 +93,7 @@ class Events(Resource):
         return events.items
 
     @auth.login_required
+    @api.expect(event_fields, validate=True)
     def post(self):
         creator = g.user
         if creator is None:
@@ -167,6 +170,7 @@ class EventsDelete(Resource):
 @api.route('/batch')
 class EventsBatch(Resource):
     @auth.login_required
+    @api.expect(event_fields, validate=True)
     def post(self):
         creator = g.user
         if creator is None:
@@ -175,7 +179,7 @@ class EventsBatch(Resource):
         batchedEvents = request.get_json()
 
         if not batchedEvents or type(batchedEvents) is not list:
-            abort(400, 'batched events have to be a list')
+            abort(400, 'batched events have to be a list of events')
 
         count = 0
 
