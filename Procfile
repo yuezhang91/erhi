@@ -1,1 +1,1 @@
-web: make run
+web: gunicorn erhi.app:app
