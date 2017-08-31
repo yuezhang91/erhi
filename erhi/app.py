@@ -1,9 +1,20 @@
+import os
+
 from flask import Flask
 from flask_restplus import Api
 
 app = Flask(__name__, instance_relative_config=True)
-# TODO: load config based on env variable
-app.config.from_object('config.development')
+
+env = os.environ.get('FLASK_ENV')
+try:
+    app.config.from_object('config.{env}'.format(env=env))
+except ImportError:
+    # default to development environment
+    # TODO: add info to log
+    # app.logger.info('environment variable {env} invalid, \
+    #     default to development'.format(env=env))
+    app.config.from_object('config.development')
+
 # sensitive config
 app.config.from_pyfile('config.py')
 
@@ -33,4 +44,5 @@ api.add_namespace(User, '/user')
 api.add_namespace(Events, '/events')
 
 if __name__ == '__main__':
-    app.run()
+    port = int(os.environ.get('PORT') or 5000)
+    app.run(host='0.0.0.0', port=port)
