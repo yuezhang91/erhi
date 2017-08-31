@@ -30,7 +30,7 @@ event_fields = api.model('Event', {
     'description': fields.String,
     'time': fields.DateTime(dt_format='rfc822'),
     'location': fields.Raw,
-    # No nested field for creator to prevent infinite loop
+    # Non-nested field for creator to prevent infinite loop
     'creator': UserField,
     'keywords': fields.List(fields.String),
     'created_on': fields.DateTime(dt_format='rfc822', attribute='created'),

@@ -25,6 +25,7 @@ setup(
         'flask-httpauth>=3.2.3',
         'pre-commit>=0.14.2',
         'flake8>=3.3.0',
-        'passlib>=1.7.1'
+        'passlib>=1.7.1',
+        'gunicorn>=19.7.1'
     ],
 )
