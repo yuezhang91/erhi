@@ -7,4 +7,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 DEBUG = False
 
 # DB
-MONGODB_SETTINGS = {'DB': 'erhi'}
+MONGODB_SETTINGS = {
+    'db': 'erhi',
+    'host': os.environ.get('MONGODB_URI')
+}

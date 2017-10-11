@@ -9,4 +9,4 @@ DEBUG = True
 S3_BUCKET = 'hier-profile-images'
 
 # DB
-MONGODB_SETTINGS = {'DB': 'erhi'}
+MONGODB_SETTINGS = {'db': 'erhi'}
