@@ -5,16 +5,15 @@ from mongoengine.errors import ValidationError
 from datetime import datetime
 
 from erhi.models import auth, Event, User
-# from erhi.resources.user import user_fields
 
 api = Namespace('events', description='')
 
 # argument parsing
 parser = reqparse.RequestParser()
-parser.add_argument('page', type=int, help='events page number')
 parser.add_argument('geo', type=str, required=True,
                     help='geo location in format of \'long,lat\'')
 parser.add_argument('dis', type=int, help='query events radius (miles)')
+parser.add_argument('page', type=int, help='events page number')
 
 
 class UserField(fields.Raw):
@@ -26,6 +25,7 @@ class UserField(fields.Raw):
 
 
 event_fields = api.model('Event', {
+    'id': fields.String,
     'title': fields.String,
     'description': fields.String,
     'time': fields.DateTime(dt_format='rfc822'),
@@ -92,8 +92,11 @@ class Events(Resource):
         # return [json.loads(event.to_json()) for event in events.items]
         return events.items
 
+    # don't use validation here for api, because we expect epoch time
+    # from client, but to use decorator marshal_with we have to specify
+    # DateTime field for time
     @auth.login_required
-    @api.expect(event_fields, validate=True)
+    @api.expect(event_fields)
     def post(self):
         creator = g.user
         if creator is None:
@@ -169,8 +172,10 @@ class EventsDelete(Resource):
 
 @api.route('/batch')
 class EventsBatch(Resource):
+    # we want to be able to insert array of events
+    # don't use validation here for api
     @auth.login_required
-    @api.expect(event_fields, validate=True)
+    @api.expect(event_fields)
     def post(self):
         creator = g.user
         if creator is None:

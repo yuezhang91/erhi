@@ -12,4 +12,8 @@ class Login(Resource):
     def get(self):
         token = g.user.generate_auth_token()
 
-        return {'token': token.decode()}
+        return {
+            'id': str(g.user.id),
+            'username': g.user.username,
+            'token': token.decode()
+        }
