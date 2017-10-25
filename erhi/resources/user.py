@@ -2,9 +2,6 @@ from flask import abort
 from flask_restplus import Namespace, Resource, reqparse, fields
 from mongoengine.errors import ValidationError
 
-import boto3
-
-from erhi.app import app
 from erhi.models import auth, User
 from erhi.resources.events import event_fields
 
@@ -81,40 +78,4 @@ class UserDelete(Resource):
 
         return {
             'message': 'user {} was deleted'.format(id if id else username)
-        }
-
-
-image_sign_parser = reqparse.RequestParser()
-image_sign_parser.add_argument('fname', type=str, required=True,
-                               help='image file name')
-image_sign_parser.add_argument('ftype', type=str, required=True,
-                               help='image file type')
-
-
-@api.route('/sign_image')
-class SignImageS3(Resource):
-    @auth.login_required
-    def get(self):
-        S3_BUCKET = app.config['S3_BUCKET']
-
-        args = image_sign_parser.parse_args()
-        file_name = args['fname']
-        file_type = args['ftype']
-
-        s3 = boto3.client('s3')
-        presigned_post = s3.generate_presigned_post(
-            Bucket=S3_BUCKET,
-            Key=file_name,
-            Fields={"acl": "public-read", "Content-Type": file_type},
-            Conditions=[
-                {"acl": "public-read"},
-                {"Content-Type": file_type}
-            ],
-            ExpiresIn=3600
-        )
-
-        return {
-            'data': presigned_post,
-            'url': 'https://{s3_bucket}.s3.amazonaws.com/{file_name}'.format(
-                s3_bucket=S3_BUCKET, filename=file_name)
         }

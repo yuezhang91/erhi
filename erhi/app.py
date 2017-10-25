@@ -34,6 +34,7 @@ from erhi.resources.signup import api as Signup # noqa
 from erhi.resources.login import api as Login # noqa
 from erhi.resources.user import api as User # noqa
 from erhi.resources.events import api as Events # noqa
+from erhi.resources.sign_file import api as SignFile # noqa
 
 api.add_namespace(Ping, '/ping')
 
@@ -42,6 +43,8 @@ api.add_namespace(Login, '/login')
 api.add_namespace(User, '/user')
 
 api.add_namespace(Events, '/events')
+
+api.add_namespace(SignFile, '/sign_file')
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT') or 5000)
