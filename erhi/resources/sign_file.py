@@ -42,5 +42,5 @@ class SignImageS3(Resource):
         return {
             'data': presigned_post,
             'url': 'https://{s3_bucket}.s3.amazonaws.com/{file_name}'.format(
-                s3_bucket=S3_BUCKET, filename=file_name)
+                s3_bucket=S3_BUCKET, file_name=file_name)
         }
