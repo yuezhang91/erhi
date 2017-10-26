@@ -7,22 +7,23 @@ from erhi.models import auth
 
 api = Namespace('sign_file', description='S3 uploading signature')
 
-image_sign_parser = reqparse.RequestParser()
-image_sign_parser.add_argument('fname', type=str, required=True,
-                               help='file name')
-image_sign_parser.add_argument('ftype', type=str, required=True,
-                               help='file type')
+parser = reqparse.RequestParser()
+parser.add_argument('fname', type=str, required=True,
+                    help='file name')
+parser.add_argument('ftype', type=str, required=True,
+                    help='file type')
 
 
 @api.route('/')
 class SignImageS3(Resource):
     @auth.login_required
+    @api.expect(parser)
     def get(self):
         # We should pass in one more parameter to indicate the s3 bucket
         # say 'profile' then the profile bucket should be used
         S3_BUCKET = app.config['S3_BUCKET']
 
-        args = image_sign_parser.parse_args()
+        args = parser.parse_args()
         file_name = args['fname']
         file_type = args['ftype']
 
