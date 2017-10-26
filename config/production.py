@@ -6,6 +6,8 @@ APP_NAME = 'erhi'
 SECRET_KEY = os.environ.get('SECRET_KEY')
 DEBUG = False
 
+S3_BUCKET = 'hier-profile-images'
+
 # DB
 MONGODB_SETTINGS = {
     'db': 'erhi',
