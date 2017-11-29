@@ -10,3 +10,5 @@ S3_BUCKET = 'hier-profile-images-development'
 
 # DB
 MONGODB_SETTINGS = {'db': 'erhi'}
+
+SENDGRID_API_KEY = os.environ.get('SENDGRID_API_KEY') or 'random'

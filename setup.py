@@ -27,6 +27,7 @@ setup(
         'flake8>=3.3.0',
         'passlib>=1.7.1',
         'gunicorn>=19.7.1',
-        'boto3>=1.4.7'
+        'boto3>=1.4.7',
+        'sendgrid>=5.3.0'
     ],
 )

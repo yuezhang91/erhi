@@ -13,3 +13,6 @@ MONGODB_SETTINGS = {
     'db': 'erhi',
     'host': os.environ.get('MONGODB_URI')
 }
+
+# SendGrid API key
+SENDGRID_API_KEY = os.environ.get('SENDGRID_API_KEY')

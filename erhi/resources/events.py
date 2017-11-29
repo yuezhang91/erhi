@@ -150,8 +150,10 @@ class Events(Resource):
 @api.route('/remove')
 class EventsDelete(Resource):
     @auth.login_required
+    @api.expect(event_fields)
     def post(self):
-        id = request.args.get('id')
+        data = request.get_json()
+        id = data.get('id')
 
         if not id:
             abort(400, 'event object is required to remove event')

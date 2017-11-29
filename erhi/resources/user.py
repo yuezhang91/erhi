@@ -1,4 +1,4 @@
-from flask import abort
+from flask import abort, request
 from flask_restplus import Namespace, Resource, reqparse, fields
 from mongoengine.errors import ValidationError
 
@@ -54,10 +54,11 @@ class Profile(Resource):
 @api.route('/remove')
 class UserDelete(Resource):
     @auth.login_required
+    @api.expect(user_fields)
     def post(self):
-        args = user_parser.parse_args()
-        id = args['id']
-        username = args['username']
+        data = request.get_json()
+        id = data.get('id')
+        username = data.get('username')
 
         if not id and not username:
             abort(400, 'id or username is required to delete user')

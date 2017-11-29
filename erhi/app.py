@@ -32,6 +32,7 @@ db.init_app(app)
 from erhi.resources.ping import api as Ping # noqa
 from erhi.resources.signup import api as Signup # noqa
 from erhi.resources.login import api as Login # noqa
+from erhi.resources.settings import api as Settings # noqa
 from erhi.resources.user import api as User # noqa
 from erhi.resources.events import api as Events # noqa
 from erhi.resources.sign_file import api as SignFile # noqa
@@ -40,8 +41,9 @@ api.add_namespace(Ping, '/ping')
 
 api.add_namespace(Signup, '/signup')
 api.add_namespace(Login, '/login')
-api.add_namespace(User, '/user')
+api.add_namespace(Settings, '/settings')
 
+api.add_namespace(User, '/user')
 api.add_namespace(Events, '/events')
 
 api.add_namespace(SignFile, '/sign_file')
